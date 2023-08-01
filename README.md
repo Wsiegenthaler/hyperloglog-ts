@@ -8,10 +8,11 @@ An exceedingly basic implementation of *HyperLogLog*, a probabalistic datastruct
 
 ## Features
 
-* Custom backends: Implement the `Hasher` trait to use the hashing method of your choice. A 32-bit Jenkins hash backend is provided by default.
+* Custom backends: Extend the `Hasher` class to use the hash function of your choice. A 32-bit Jenkins hash backend is provided by default.
 * Lower-bound correction: "Linear Counting" is used when the estimated cardinality is low relative to the number of registers.
 * Upper-bound correction: Estimated cardinality is adjusted when found to be high relative to the size of the hash space.
 * An additional correction is made to compensate for 'systematic multiplicative bias' resulting from hash collisions.
+* Type defs
 
 ## Example
 
@@ -22,16 +23,17 @@ import HyperLogLog, { Jenkins32 } from 'hyperloglog-ts'
 const hasher = new Jenkins32(12) // 12-bit register index (i.e. 4096 registers)
 const counter = new HyperLogLog(hasher)
 
-const insertCount = 10000000
-const distinctCount = 7250000
+// Perform 50 million insertions of 15 million distinct values
+const insertCount = 50000000
+const distinctCount = 15000000
 
-// Add values to the set
+// Count values
 for (var i=0; i<insertCount; i++)
   counter.add(i % distinctCount)
 
 // Approximate count
-const cnt = counter.count()
-console.log(`estimate = ${cnt}, expected = ${distinctCount}`)
+const count = counter.count()
+console.log(`[count] estimate = ${count}, expected = ${distinctCount}, error = ${count - distinctCount}`)
 ```
 
 ## References

@@ -12,22 +12,6 @@ export interface MultiSetCounter {
   count(): number
 }
 
-//export abstract class Hasher<H> {
-//  readonly mBits: number
-//
-//  constructor(mBits: number) {
-//    this.mBits = mBits
-//  }
-//
-//  abstract hash(val: string): H
-//
-//  abstract runLength(hashVal: H): number
-//
-//  abstract mIdx(hashVal: H): number
-//
-//  abstract hashLen(): number
-//}
-
 /* Re-export provided hashers */
 export { Jenkins32 } from './backends/jenkins32'
 
