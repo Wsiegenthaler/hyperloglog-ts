@@ -4,7 +4,7 @@
 
 ## Description
 
-An exceedingly basic implementation of *HyperLogLog*, a probabalistic datastructure useful for approximating the number of distinct elements in a multiset. This approach allows for `O(1)` time complexity and `O(log(log(n)))` space complexity w.r.t set size `n`.
+An exceedingly basic implementation of *HyperLogLog*, a probabalistic datastructure useful for approximating the number of distinct elements in a multiset. This approach allows for `O(1)` time complexity and `O(log log n)` space complexity w.r.t set size `n`.
 
 ## Features
 
