@@ -28,8 +28,8 @@ export interface MultiSetCounter {
 //  abstract hashLen(): number
 //}
 
-/* Reexport default hasher */
-export { Jenkins32Hasher } from './backends/hasher-jenkins'
+/* Re-export provided hashers */
+export { Jenkins32 } from './backends/jenkins32'
 
 export type Options = {
 

@@ -16,10 +16,10 @@ An exceedingly basic implementation of *HyperLogLog*, a probabalistic datastruct
 ## Example
 
 ```js
-import HyperLogLog, { Jenkins32Hasher } from 'hyperloglog-ts'
+import HyperLogLog, { Jenkins32 } from 'hyperloglog-ts'
 
 // Initialize counter
-const hasher = new Jenkins32Hasher(12)
+const hasher = new Jenkins32(12) // 12-bit register index (i.e. 4096 registers)
 const counter = new HyperLogLog(hasher)
 
 const insertCount = 10000000
