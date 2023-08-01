@@ -36,6 +36,23 @@ const count = counter.count()
 console.log(`[count] estimate = ${count}, expected = ${distinctCount}, error = ${count - distinctCount}`)
 ```
 
+Counters can be merged, allowing for tracking cardinality in a distributed manner:
+
+```js
+// Another counter
+const another = new HyperLogLog(new Jenkins32())
+
+// Count values again, this time with only half the range overlapping with the the original set
+const offset = Math.round(distinctCount / 2)
+for (var i=0; i<insertCount; i++)
+  another.add(i % distinctCount + offset)
+
+// Merge first counter with the second, estimated cardinality should be 1.5x the original
+const merged = counter.merge(another)
+const mergedCount = merged.count()
+console.log(`[merged] estimate = ${mergedCount}, expected = ${count + offset}, error = ${mergedCount - count - offset}`)
+```
+
 ## References
 
 * "[HyperLogLog](http://en.wikipedia.org/wiki/HyperLogLog)" Wikipedia. Wikimedia Foundation, n.d. Mon. 31 Jul. 2023.
