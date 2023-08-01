@@ -1,0 +1,63 @@
+{
+  "name": "hyperloglog-ts",
+  "version": "0.0.1",
+  "description": "Efficiently estimate the cardinality of a set in Typescript and Javascript",
+  "type": "module",
+  "exports": {
+    "import": "./dist/esm/index.js",
+    "require": "./dist/hyperloglog-ts.cjs",
+    "browser": "./dist/hyperloglog-ts.umd.js",
+    "types": "./dist/hyperloglog-ts.d.ts"
+  },
+  "module": "dist/esm/index.js",
+  "main": "dist/hyperloglog-ts.cjs",
+  "browser": "dist/hyperloglog-ts.umd.js",
+  "types": "dist/hyperloglog-ts.d.ts",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "c8 -r html -r text ava",
+    "test-watch": "ava -w",
+    "prepare": "npm run clean && npm run build",
+    "clean": "rm -rf ./dist"
+  },
+  "keywords": ["hyperloglog", "hll", "cardinality", "count distinct", "probabilistic"],
+  "author": "Weston Siegenthaler",
+  "license": "ISC",
+  "dependencies": {
+    "lodash-es": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.2",
+    "@babel/core": "^7.19.6",
+    "@babel/preset-env": "^7.19.4",
+    "@babel/preset-typescript": "^7.18.6",
+    "@rollup/plugin-babel": "^6.0.2",
+    "@rollup/plugin-commonjs": "^23.0.2",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.1.0",
+    "@types/lodash-es": "^4.17.6",
+    "ava": "^5.0.1",
+    "c8": "^7.12.0",
+    "commander": "^9.4.1",
+    "rollup": "^3.2.3",
+    "rollup-plugin-analyzer": "^4.0.0",
+    "rollup-plugin-dts": "^5.0.0",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "ts-node": "^10.9.1"
+  },
+  "ava": {
+    "files": [
+      "test/**/*",
+      "!test/util.ts"
+    ],
+    "extensions": {
+      "ts": "module"
+    },
+    "nodeArguments": [
+      "--loader=ts-node/esm"
+    ],
+    "verbose": true
+  }
+}
