@@ -66,7 +66,7 @@ export default class HyperLogLog<H extends Hasher<any>> implements MultiSetCount
    * @param options
    */
   constructor(hasher: H, options?: Options) {
-    if (!hasher) console.error(`[HyperLogLog] ERROR: A \`Hasher\` implementation must be provided!`)
+    if (!hasher) throw new Error(`[HyperLogLog] ERROR: A \`Hasher\` implementation must be provided!`)
     this.hasher = hasher
 
     if (isObject(options)) defaults(cloneDeep(this.opts), options)
