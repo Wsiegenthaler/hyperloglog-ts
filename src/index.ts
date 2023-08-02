@@ -10,6 +10,7 @@ const { log, max, round } = Math
 export interface MultiSetCounter {
   add(val: string): void
   count(): number
+  merge(other: MultiSetCounter): MultiSetCounter
 }
 
 /* Re-export provided hashers */
@@ -95,7 +96,7 @@ export default class HyperLogLog<H extends Hasher<any>> implements MultiSetCount
     const estimate = round(am * m * z)
 
     if (this.opts.boundAdjustments) {
-      const hashSpace = 2n ** BigInt(this.hasher.hashLen())
+      const hashSpace = 2n ** BigInt(this.hasher.hashLen)
       if (estimate < 2.5 * m) {
         // Lower bound correction (aka Linear Counting)
         const v = this.M.filter(m => m === 0.0).length
@@ -114,14 +115,21 @@ export default class HyperLogLog<H extends Hasher<any>> implements MultiSetCount
    * Creates a new counter by merging the state of this with another - useful for scenarios
    * where counting is performed in a distributed manner.
    * @returns A new `HyperLogLog` counter instance whose cardinality estimate reflects the
-   *          combined sets of the merged counters.
+   *          combined sets of the merged counters. The new counter inherits the `options`
+   *          of this instance (lhs).
    */
-  merge(other: HyperLogLog<H>) {
-    if (this.hasher.mBits === other.hasher.mBits) {
-      const merged = new HyperLogLog(this.hasher)
-      for (var i=0; i<this.M.length; i++)
-        merged.M[i] = max(this.M[i], other.M[i])
-      return merged
-    } else console.error('[HyperLogLog] Unable to merge counters with varying register counts (see mBit parameter)')
+  merge(other: HyperLogLog<H>): HyperLogLog<H> {
+    if (this.hasher.mBits !== other.hasher.mBits)
+      throw Error(`[HyperLogLog] Unable to merge counters with varying register counts (lhs=${this.hasher.mBits}-bits, rhs=${other.hasher.mBits}-bits)`)
+
+    if (this.hasher.hasherTag !== other.hasher.hasherTag)
+      throw Error(`[HyperLogLog] Counters must use the same \`Hasher\` implementations to be merged (lhs=${this.hasher.hasherTag}, rhs=${other.hasher.hasherTag})`)
+
+    const merged = new HyperLogLog(this.hasher, this.opts)
+
+    for (var i=0; i<this.M.length; i++)
+      merged.M[i] = max(this.M[i], other.M[i])
+
+    return merged
   }
 }

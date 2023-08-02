@@ -3,21 +3,23 @@ import Hasher from './hasher'
 
 export class Jenkins32 extends Hasher<number> {
 
-  protected static HASH_LEN = 32
-  protected static DFLT_MBITS = 12
+  readonly hashLen = 32
+  readonly hasherTag = 'jenkins32'
+
+  protected static readonly defaultMBits = 12
 
   protected valMask: number
   protected mIdxMask: number
 
-  constructor(mBits: number = Jenkins32.DFLT_MBITS) {
+  constructor(mBits: number = Jenkins32.defaultMBits) {
     if (mBits > 12) {
       console.warn(`[Jenkins32] WARNING: Hasher does not support precision (mBits) larger than 12. Defaulting to maximum.`)
-      mBits = Jenkins32.DFLT_MBITS
+      mBits = Jenkins32.defaultMBits
     }
 
     super(mBits)
 
-    this.valMask = 2 ** (Jenkins32.HASH_LEN - mBits) - 1
+    this.valMask = 2 ** (this.hashLen - mBits) - 1
     this.mIdxMask = 2 ** this.mBits - 1
   }
 
@@ -40,7 +42,7 @@ export class Jenkins32 extends Hasher<number> {
   runLength(h: number) {
     let masked = h & this.valMask
 
-    if (masked === 0) return Jenkins32.HASH_LEN - this.mBits
+    if (masked === 0) return this.hashLen - this.mBits
 
     var z = 0
     while (this.isZeroAtIdx(masked, z)) z++
@@ -49,10 +51,8 @@ export class Jenkins32 extends Hasher<number> {
   }
 
   mIdx(h: number): number {
-    return (h >> (Jenkins32.HASH_LEN - this.mBits)) & this.mIdxMask
+    return (h >> (this.hashLen - this.mBits)) & this.mIdxMask
   }
-
-  hashLen() { return Jenkins32.HASH_LEN }
 
   private isZeroAtIdx(h: number, z: number): boolean {
     return ((h >> z) & 1) === 0
