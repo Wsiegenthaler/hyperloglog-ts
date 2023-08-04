@@ -1,25 +1,22 @@
-import Hasher from './hasher'
+import { MultiSetCounter } from '../index'
+import { Hasher, HasherFactory } from './hasher'
 
 
-export class Jenkins32 extends Hasher<number> {
+export const jenkins32Tag = 'jenkins32'
+
+export class Jenkins32 implements Hasher<number> {
 
   readonly hashLen = 32
-  readonly hasherTag = 'jenkins32'
+  readonly maxMBits = 12
+  readonly hasherTag = jenkins32Tag
 
-  protected static readonly defaultMBits = 12
+  protected readonly mBits: number
+  protected readonly valMask: number
+  protected readonly mIdxMask: number
 
-  protected valMask: number
-  protected mIdxMask: number
-
-  constructor(mBits: number = Jenkins32.defaultMBits) {
-    if (mBits > 12) {
-      console.warn(`[Jenkins32] WARNING: Hasher does not support precision (mBits) larger than 12. Defaulting to maximum.`)
-      mBits = Jenkins32.defaultMBits
-    }
-
-    super(mBits)
-
-    this.valMask = 2 ** (this.hashLen - mBits) - 1
+  constructor(counter: MultiSetCounter) {
+    this.mBits = counter.mBits()
+    this.valMask = 2 ** (this.hashLen - this.mBits) - 1
     this.mIdxMask = 2 ** this.mBits - 1
   }
 
@@ -58,3 +55,5 @@ export class Jenkins32 extends Hasher<number> {
     return ((h >> z) & 1) === 0
   }
 }
+
+HasherFactory.register(jenkins32Tag, Jenkins32)

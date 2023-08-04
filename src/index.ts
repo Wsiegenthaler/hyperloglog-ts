@@ -1,8 +1,10 @@
 import { cloneDeep, defaults, isObject, toString } from 'lodash-es'
+import { SmartBuffer } from 'smart-buffer'
 
-import Hasher from './backends/hasher'
+import { Hasher, HasherFactory } from './backends/hasher'
 
 import { alphaApprox, harmonicMean } from './util'
+import { jenkins32Tag } from './backends/jenkins32'
 
 const { log, max, round } = Math
 
@@ -11,27 +13,39 @@ export interface MultiSetCounter {
   add(val: string): void
   count(): number
   merge(other: MultiSetCounter): MultiSetCounter
+  mBits(): number
+  serialize(): Buffer
 }
 
-/* Re-export provided hashers */
-export { Jenkins32 } from './backends/jenkins32'
-
 export type Options = {
+
+  /**
+   * The name of the hasher implementation to use.
+   */
+  hasherTag: string
+
+  /**
+   * Number of hash bits used to determine register index. This should be
+   * `log2(r)` where `r` is the number of registers.
+   **/
+  mBits?: number
 
   /**
    * Whether to correct for 'systematic multiplicative bias' resulting from
    * hash collisions. See the `count()` method for details (enabled by default)
    */
-  readonly collisionAdjustment?: boolean
+  collisionAdjustment?: boolean
 
   /**
    * Whether to make adjustments when the observed cardinality is more or less than
    * expected. See the counter `count()` method for details. (enabled by default)
    */
-  readonly boundAdjustments?: boolean
+  boundAdjustments?: boolean
 }
 
 const Defaults: Options = {
+  hasherTag: jenkins32Tag,
+  mBits: 12,
   collisionAdjustment: true,
   boundAdjustments: true
 }
@@ -40,30 +54,48 @@ const Defaults: Options = {
  * A basic implementation of the 'HyperLogLog' datastructure which is useful for
  * estimating the number of distinct elements in a multiset.
  */
-export default class HyperLogLog<H extends Hasher<any>> implements MultiSetCounter {
+export class HyperLogLog implements MultiSetCounter {
 
-  protected hasher: H
+  protected hasher: Hasher<any>
   protected M: Uint8Array
   protected opts: Options = cloneDeep(Defaults)
- 
+
   /**
    * @param hasher The hashing backend to use. Any instance implementing the `Hasher` trait may be used.
    * @param options
    */
-  constructor(hasher: H, options?: Options) {
-    if (!hasher) throw new Error(`[HyperLogLog] ERROR: A \`Hasher\` implementation must be provided!`)
-    this.hasher = hasher
-
+  constructor(options?: Options) {
+    // Initialize options with defaults if unspecified
     if (isObject(options)) defaults(cloneDeep(this.opts), options)
 
-    if (hasher.mBits! < 4)
-      console.warn(`[HyperLogLog] WARNING: Recommended precision (mBits) should be larger than 4 for accurate results.`)
+    // Verify register count is at least 1
+    if (this.opts.mBits! < 0) throw Error(`[HyperLogLog] ERROR: Precision (mBits) must be at least 0.`)
 
-    const m = 2 ** hasher.mBits
+    // Warn if register count is less than 2^4
+    if (this.opts.mBits! < 4) console.warn(`[HyperLogLog] WARNING: Recommended precision (mBits) should be larger than 4 for accurate results.`)
+
+    // Build hasher backend
+    this.hasher = HasherFactory.build(this.opts.hasherTag, this)
+
+    // Verify that this backend supports the configured number of registers
+    if (this.opts.mBits > this.hasher.maxMBits) {
+      console.warn(`[HyperLogLog] WARNING: Hasher '${this.hasher.hasherTag}' does not support precision (mBits) larger than ${this.hasher.maxMBits}. Defaulting to maximum.`)
+      this.opts.mBits = this.hasher.maxMBits
+    }
+
+    // Initialize registers
+    const m = 2 ** this.opts.mBits
     this.M = new Uint8Array(m)
     for (var i=0; i<m; i++) this.M[i] = 0
   }
- 
+
+  /**
+   * @returns The number of bits used for the register index (e.g. 8-bits = 256 registers)
+   */
+  mBits(): number {
+    return this.opts.mBits!
+  }
+
   /**
    * @param val Inserts a value into this set for counting. Duplicate values will only be
    * counted once in the resulting estimate.
@@ -92,7 +124,7 @@ export default class HyperLogLog<H extends Hasher<any>> implements MultiSetCount
     const m = this.M.length
     const z = harmonicMean(Float32Array.from(this.M).map(run => 2 ** run))
 
-    const am = this.opts.collisionAdjustment ? alphaApprox(this.hasher.mBits) : 1
+    const am = this.opts.collisionAdjustment ? alphaApprox(this.opts.mBits) : 1
     const estimate = round(am * m * z)
 
     if (this.opts.boundAdjustments) {
@@ -112,24 +144,57 @@ export default class HyperLogLog<H extends Hasher<any>> implements MultiSetCount
   }
 
   /**
-   * Creates a new counter by merging the state of this with another - useful for scenarios
-   * where counting is performed in a distributed manner.
+   * Creates a new counter by merging the state of this with another - useful for distributed scenarios.
    * @returns A new `HyperLogLog` counter instance whose cardinality estimate reflects the
    *          combined sets of the merged counters. The new counter inherits the `options`
    *          of this instance (lhs).
    */
-  merge(other: HyperLogLog<H>): HyperLogLog<H> {
-    if (this.hasher.mBits !== other.hasher.mBits)
-      throw Error(`[HyperLogLog] Unable to merge counters with varying register counts (lhs=${this.hasher.mBits}-bits, rhs=${other.hasher.mBits}-bits)`)
+  merge(other: HyperLogLog): HyperLogLog {
+    if (this.mBits() !== other.mBits())
+      throw Error(`[HyperLogLog] Unable to merge counters with varying register counts (lhs=${this.mBits()}-bits, rhs=${other.mBits()}-bits)`)
 
     if (this.hasher.hasherTag !== other.hasher.hasherTag)
       throw Error(`[HyperLogLog] Counters must use the same \`Hasher\` implementations to be merged (lhs=${this.hasher.hasherTag}, rhs=${other.hasher.hasherTag})`)
 
-    const merged = new HyperLogLog(this.hasher, this.opts)
+    const merged = new HyperLogLog(this.opts)
 
     for (var i=0; i<this.M.length; i++)
       merged.M[i] = max(this.M[i], other.M[i])
 
     return merged
+  }
+
+  /**
+   * @returns A `Buffer` containing the state of this counter. Useful for transmitting
+   * to another host for merging.
+   */
+  serialize(): Buffer {
+    const optsJson = JSON.stringify(this.opts)
+
+    const maxBytes =
+      (3 * optsJson.length) + // max 3-bytes per char (utf8)
+      (4 + this.M.length)     // 32-bit length + 1-byte per register
+
+    const buf = new SmartBuffer({ size: maxBytes })
+
+    buf.writeStringNT(optsJson)
+    buf.writeUInt32LE(this.M.length)
+    this.M.forEach(b => buf.writeUInt8(b))
+
+    return buf.toBuffer()
+  }
+
+  /**
+   * @returns A newly instantiated counter which mirrors a previously serialized one.
+   */
+  static deserialize(rawBuf: Buffer): HyperLogLog {
+    const buf = SmartBuffer.fromBuffer(rawBuf)
+
+    const options = JSON.parse(buf.readStringNT())
+    const M = new Uint8Array(buf.readBuffer(buf.readUInt32LE()))
+
+    const counter = new HyperLogLog(options)
+    counter.M = M
+    return counter
   }
 }
