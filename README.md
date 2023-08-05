@@ -8,11 +8,11 @@ A basic implementation of *HyperLogLog*, a probabalistic datastructure useful fo
 
 ## Features
 
-* Custom Backends: Extend the `Hasher` class to use the hash function of your choice. A 32-bit Jenkins hash backend is provided by default.
-* Serialization & Deserialization
+* Custom Backends: Implement the `Hasher` interface to use the hash function of your choice. A 32-bit Jenkins hash backend is provided by default.
 * Lower-Bound Correction: 'Linear Counting' is used when the estimated cardinality is low relative to the number of configured registers.
 * Upper-Bound Correction: Estimated cardinality is adjusted when found to be high relative to the size of the hash space.
 * An additional correction is made to compensate for 'systematic multiplicative bias' resulting from hash collisions.
+* Serialization
 * Type Definitions
 
 ## Usage
@@ -40,8 +40,8 @@ console.log(`[count] estimate = ${count}, expected = ${distinctCount}, error = $
 
 #### Merging
 
-Counters can be merged, allowing for tracking cardinality in distributed scenarios. Here we create another counter
-whose set has a 50% overlap with the first:
+Counters can be merged, allowing for tracking cardinality in distributed scenarios. Here we merge the counter created above with another
+whose set has a 50% overlap with the first. The estimated cardinality of the merged counter will be 1.5x the original.
 
 ```js
 // Another counter, somewhere else
@@ -52,7 +52,7 @@ const offset = Math.round(distinctCount / 2)
 for (var i=0; i<insertCount; i++)
   another.add(i % distinctCount + offset)
 
-// Merge first counter with the second, estimated cardinality should be 1.5x the original
+// Merge first counter with the second
 const merged = counter.merge(another)
 const mergedCount = merged.count()
 console.log(`[merged] estimate = ${mergedCount}, expected = ${count + offset}, error = ${mergedCount - count - offset}`)
