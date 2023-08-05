@@ -1,5 +1,7 @@
-![Build](https://github.com/wsiegenthaler/hyperloglog-ts/actions/workflows/build.yml/badge.svg)
-[![npm version](https://badge.fury.io/js/hyperloglog-ts.svg)](https://www.npmjs.com/package/hyperloglog-ts)
+# hyperlolo
+
+![Build](https://github.com/wsiegenthaler/hyperlolo/actions/workflows/build.yml/badge.svg)
+[![npm version](https://badge.fury.io/js/hyperlolo.svg)](https://www.npmjs.com/package/hyperlolo)
 [![License](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
 ## Description
@@ -8,19 +10,19 @@ A basic implementation of *HyperLogLog*, a probabalistic datastructure useful fo
 
 ## Features
 
-* Custom Backends: Implement the `Hasher` interface to use the hash function of your choice. A 32-bit Jenkins hash backend is provided by default.
-* Lower-Bound Correction: 'Linear Counting' is used when the estimated cardinality is low relative to the number of configured registers.
-* Upper-Bound Correction: Estimated cardinality is adjusted when found to be high relative to the size of the hash space.
+* **Custom Backends**: Implement the `Hasher` interface to use the hash function of your choice. A 32-bit Jenkins hash backend is provided by default.
+* **Serialization**
+* **Type Definitions**
+* **Lower-Bound Correction**: 'Linear Counting' is used when the estimated cardinality is low relative to the number of configured registers.
+* **Upper-Bound Correction**: Estimated cardinality is adjusted when found to be high relative to the size of the hash space.
 * An additional correction is made to compensate for 'systematic multiplicative bias' resulting from hash collisions.
-* Serialization
-* Type Definitions
 
 ## Usage
 
 #### Basic
 
 ```js
-import { HyperLogLog } from 'hyperloglog-ts'
+import { HyperLogLog } from 'hyperlolo'
 
 // Initialize counter
 const counter = new HyperLogLog({ hasherId: 'jenkins32', precision: 12 }) // 12-bit register index = 4096 registers

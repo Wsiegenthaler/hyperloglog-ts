@@ -1,18 +1,18 @@
 {
-  "name": "hyperloglog-ts",
-  "version": "0.2.0",
+  "name": "hyperlolo",
+  "version": "0.3.0",
   "description": "Efficiently estimate the cardinality of a set in Typescript and Javascript",
   "type": "module",
   "exports": {
     "import": "./dist/esm/index.js",
-    "require": "./dist/hyperloglog-ts.cjs",
-    "browser": "./dist/hyperloglog-ts.umd.js",
-    "types": "./dist/hyperloglog-ts.d.ts"
+    "require": "./dist/hyperlolo.cjs",
+    "browser": "./dist/hyperlolo.umd.js",
+    "types": "./dist/hyperlolo.d.ts"
   },
   "module": "dist/esm/index.js",
-  "main": "dist/hyperloglog-ts.cjs",
-  "browser": "dist/hyperloglog-ts.umd.js",
-  "types": "dist/hyperloglog-ts.d.ts",
+  "main": "dist/hyperlolo.cjs",
+  "browser": "dist/hyperlolo.umd.js",
+  "types": "dist/hyperlolo.d.ts",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",

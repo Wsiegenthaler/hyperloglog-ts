@@ -69,7 +69,7 @@ const esCjsConfig = {
 
 const typescriptDef = {
   input: './dist/src/index.d.ts',
-  output: [{ file: 'dist/hyperloglog-ts.d.ts', format: 'es' }],
+  output: [{ file: 'dist/hyperlolo.d.ts', format: 'es' }],
   plugins: [dts()]
 }
 
