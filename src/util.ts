@@ -18,13 +18,13 @@ export const harmonicMean = (vals: Float32Array) => vals.length / sum(vals.map(v
  * hash collisions. These values are approximations of the formula provided by the
  * HyperLogLog Wikipedia entry.
  */
-export const alphaApprox = (mBits: number) => {
-  const alphasByMBits = [
+export const alphaApprox = (precision: number) => {
+  const alphasByPrecision = [
     0.35119394711676189 , 0.53243461399597255 , 0.62560871093725783,
     0.67310202386766599 , 0.69712263380102416 , 0.70920845287002329,
     0.71527118996133942 , 0.71830763819181383 , 0.71982714782040011,
     0.72058722597645269 , 0.72096734613621909 , 0.72115742651737845,
     0.72125247178713563 , 0.72129999569229111 , 0.72132375796249839 ]
-  if (mBits > 0 && mBits < alphasByMBits.length) return alphasByMBits[mBits-1]
-  else return .7213 / (1 + 1.079 / mBits)
+  if (precision > 0 && precision < alphasByPrecision.length) return alphasByPrecision[precision-1]
+  else return .7213 / (1 + 1.079 / precision)
 }

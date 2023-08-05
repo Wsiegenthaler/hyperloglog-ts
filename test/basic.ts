@@ -45,8 +45,8 @@ test('serialize / deserialize', t => {
   const buffer = counter1.serialize()
   const counter2 = HyperLogLog.deserialize(buffer)
 
-  // Verify that mBits parameters match
-  t.true(counter1.mBits === counter2.mBits, `register count of deserialized counter doesn't match original! original=${counter1.mBits}-bits, clone=${counter2.mBits}-bits`)
+  // Verify that precision parameters match
+  t.true(counter1.precision === counter2.precision, `register count of deserialized counter doesn't match original! original=${counter1.precision}-bits, clone=${counter2.precision}-bits`)
 
   // Verify that hasherIds match
   const hasherId1 = counter1['hasher']['hasherId']

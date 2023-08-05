@@ -7,17 +7,17 @@ export const jenkins32Id = 'jenkins32'
 export class Jenkins32 implements Hasher<number> {
 
   readonly hashLen = 32
-  maxMBits = 12
+  maxPrecision = 12
   hasherId = jenkins32Id
 
-  protected readonly mBits: number
+  protected readonly precision: number
   protected readonly valMask: number
-  protected readonly mIdxMask: number
+  protected readonly regIdxMask: number
 
   constructor(counter: MultiSetCounter) {
-    this.mBits = counter.mBits()
-    this.valMask = 2 ** (this.hashLen - this.mBits) - 1
-    this.mIdxMask = 2 ** this.mBits - 1
+    this.precision = counter.precision()
+    this.valMask = 2 ** (this.hashLen - this.precision) - 1
+    this.regIdxMask = 2 ** this.precision - 1
   }
 
   hash(str: string) {
@@ -39,7 +39,7 @@ export class Jenkins32 implements Hasher<number> {
   runLength(h: number) {
     let masked = h & this.valMask
 
-    if (masked === 0) return this.hashLen - this.mBits
+    if (masked === 0) return this.hashLen - this.precision
 
     var z = 0
     while (this.isZeroAtIdx(masked, z)) z++
@@ -47,8 +47,8 @@ export class Jenkins32 implements Hasher<number> {
     return z
   }
 
-  mIdx(h: number): number {
-    return (h >> (this.hashLen - this.mBits)) & this.mIdxMask
+  regIdx(h: number): number {
+    return (h >> (this.hashLen - this.precision)) & this.regIdxMask
   }
 
   private isZeroAtIdx(h: number, z: number): boolean {
