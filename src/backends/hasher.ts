@@ -34,7 +34,7 @@ export interface Hasher<V> {
    * are compatible before merging, as well as to instantiate the proper backend
    * when deserializing.
    */
-  readonly hasherTag: string
+  readonly hasherId: string
 
   /** Maximum number of register bits supported by a `Hasher` implementation */
   readonly maxMBits: number
@@ -48,25 +48,25 @@ export class HasherFactory {
   private static factories: Map<string, HasherFactoryImpl> = new Map()
 
   /**
-   * Used to register custom backends so that they may be instantiated given their unique
-   * tag (see `Options.hasherTag`). See `Jenkins32` for an example of how to register your backend.
+   * Used to register custom backends so that they may be instantiated given their unique id
+   * (see `Options.hasherId`). See the `Jenkins32` class for an example of how to register your backend.
    */
-  static register(hasherTag: string, f: HasherFactoryImpl) {
-    if (HasherFactory.factories.has(hasherTag))
-      console.warn(`[HyperLogLog] HasherFactory '${hasherTag}' is already registered and will be overwritten`)
+  static register(hasherId: string, f: HasherFactoryImpl) {
+    if (HasherFactory.factories.has(hasherId))
+      console.warn(`[HyperLogLog] HasherFactory '${hasherId}' is already registered and will be overwritten`)
     
-    this.factories.set(hasherTag, f)
+    this.factories.set(hasherId, f)
   }
 
   /**
-   * Builds a `Hasher` instance given it's `hasherTag` and the counter it will be used with. This is
+   * Builds a `Hasher` instance given it's `hasherId` and the counter it will be used with. This is
    * used internally by `HyperLogLog` during construction and deserialization.
    */
-  static build(hasherTag: string, counter: MultiSetCounter): Hasher<any> {
-    if (!HasherFactory.factories.has(hasherTag))
-      console.warn(`[HyperLogLog] HasherFactory '${hasherTag}' doesn't exist or hasn't been registered with the HasherFactory! See HasherFactory.register(..)`)
+  static build(hasherId: string, counter: MultiSetCounter): Hasher<any> {
+    if (!HasherFactory.factories.has(hasherId))
+      console.warn(`[HyperLogLog] HasherFactory '${hasherId}' doesn't exist or hasn't been registered with the HasherFactory! See HasherFactory.register(..)`)
 
-    const ctor = HasherFactory.factories.get(hasherTag)
+    const ctor = HasherFactory.factories.get(hasherId)
     return new ctor(counter)
   }
 }

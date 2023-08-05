@@ -4,7 +4,7 @@ import { SmartBuffer } from 'smart-buffer'
 import { Hasher, HasherFactory } from './backends/hasher'
 
 import { alphaApprox, harmonicMean } from './util'
-import { jenkins32Tag } from './backends/jenkins32'
+import { jenkins32Id } from './backends/jenkins32'
 
 const { log, max, round } = Math
 
@@ -22,7 +22,7 @@ export type Options = {
   /**
    * The name of the hasher implementation to use.
    */
-  hasherTag: string
+  hasherId?: string
 
   /**
    * Number of hash bits used to determine register index. This should be
@@ -44,7 +44,7 @@ export type Options = {
 }
 
 const Defaults: Options = {
-  hasherTag: jenkins32Tag,
+  hasherId: jenkins32Id,
   mBits: 12,
   collisionAdjustment: true,
   boundAdjustments: true
@@ -75,11 +75,11 @@ export class HyperLogLog implements MultiSetCounter {
     if (this.opts.mBits! < 4) console.warn(`[HyperLogLog] WARNING: Recommended precision (mBits) should be larger than 4 for accurate results.`)
 
     // Build hasher backend
-    this.hasher = HasherFactory.build(this.opts.hasherTag, this)
+    this.hasher = HasherFactory.build(this.opts.hasherId, this)
 
     // Verify that this backend supports the configured number of registers
     if (this.opts.mBits > this.hasher.maxMBits) {
-      console.warn(`[HyperLogLog] WARNING: Hasher '${this.hasher.hasherTag}' does not support precision (mBits) larger than ${this.hasher.maxMBits}. Defaulting to maximum.`)
+      console.warn(`[HyperLogLog] WARNING: Hasher '${this.hasher.hasherId}' does not support precision (mBits) larger than ${this.hasher.maxMBits}. Defaulting to maximum.`)
       this.opts.mBits = this.hasher.maxMBits
     }
 
@@ -153,8 +153,8 @@ export class HyperLogLog implements MultiSetCounter {
     if (this.mBits() !== other.mBits())
       throw Error(`[HyperLogLog] Unable to merge counters with varying register counts (lhs=${this.mBits()}-bits, rhs=${other.mBits()}-bits)`)
 
-    if (this.hasher.hasherTag !== other.hasher.hasherTag)
-      throw Error(`[HyperLogLog] Counters must use the same \`Hasher\` implementations to be merged (lhs=${this.hasher.hasherTag}, rhs=${other.hasher.hasherTag})`)
+    if (this.hasher.hasherId !== other.hasher.hasherId)
+      throw Error(`[HyperLogLog] Counters must use the same \`Hasher\` implementations to be merged (lhs=${this.hasher.hasherId}, rhs=${other.hasher.hasherId})`)
 
     const merged = new HyperLogLog(this.opts)
 

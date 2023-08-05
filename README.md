@@ -23,7 +23,7 @@ A basic implementation of *HyperLogLog*, a probabalistic datastructure useful fo
 import { HyperLogLog } from 'hyperloglog-ts'
 
 // Initialize counter
-const counter = new HyperLogLog({ hasher: 'jenkins32', mBits: 12 }) // 12-bit register index = 4096 registers
+const counter = new HyperLogLog({ hasherId: 'jenkins32', mBits: 12 }) // 12-bit register index = 4096 registers
 
 // Perform 50 million insertions of 15 million distinct values
 const insertCount = 50000000
@@ -45,7 +45,7 @@ whose set has a 50% overlap with the first:
 
 ```js
 // Another counter, somewhere else
-const another = new HyperLogLog({ hasher: 'jenkins32', mBits: 12 })
+const another = new HyperLogLog({ hasherId: 'jenkins32', mBits: 12 })
 
 // Count values with only half the range overlapping the the original set
 const offset = Math.round(distinctCount / 2)

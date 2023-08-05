@@ -2,13 +2,13 @@ import { MultiSetCounter } from '../index'
 import { Hasher, HasherFactory } from './hasher'
 
 
-export const jenkins32Tag = 'jenkins32'
+export const jenkins32Id = 'jenkins32'
 
 export class Jenkins32 implements Hasher<number> {
 
   readonly hashLen = 32
-  readonly maxMBits = 12
-  readonly hasherTag = jenkins32Tag
+  maxMBits = 12
+  hasherId = jenkins32Id
 
   protected readonly mBits: number
   protected readonly valMask: number
@@ -56,4 +56,4 @@ export class Jenkins32 implements Hasher<number> {
   }
 }
 
-HasherFactory.register(jenkins32Tag, Jenkins32)
+HasherFactory.register(jenkins32Id, Jenkins32)
