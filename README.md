@@ -26,16 +26,16 @@ import { HyperLogLog } from 'hyperloglog-ts'
 const counter = new HyperLogLog({ hasherId: 'jenkins32', precision: 12 }) // 12-bit register index = 4096 registers
 
 // Perform 50 million insertions of 15 million distinct values
-const insertCount = 50000000
-const distinctCount = 15000000
+const inserts = 50000000
+const distincts = 15000000
 
 // Count values
-for (var i=0; i<insertCount; i++)
-  counter.add(i % distinctCount)
+for (var i=0; i<inserts; i++)
+  counter.add(i % distincts)
 
 // Approximate count
 const count = counter.count()
-console.log(`[count] estimate = ${count}, expected = ${distinctCount}, error = ${count - distinctCount}`)
+console.log(`[count] estimate = ${count}, expected = ${distincts}, error = ${count - distincts}`)
 ```
 
 #### Merging
@@ -48,9 +48,9 @@ whose set has a 50% overlap with the first. The estimated cardinality of the mer
 const another = new HyperLogLog({ hasherId: 'jenkins32', precision: 12 })
 
 // Count values with only half the range overlapping the the original set
-const offset = Math.round(distinctCount / 2)
-for (var i=0; i<insertCount; i++)
-  another.add(i % distinctCount + offset)
+const offset = Math.round(distincts / 2)
+for (var i=0; i<inserts; i++)
+  another.add(i % distincts + offset)
 
 // Merge first counter with the second
 const merged = counter.merge(another)
