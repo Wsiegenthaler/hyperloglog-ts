@@ -66,7 +66,7 @@ export class HyperLogLog implements MultiSetCounter {
    */
   constructor(options?: Options) {
     // Initialize options with defaults if unspecified
-    if (isObject(options)) defaults(cloneDeep(this.opts), options)
+    if (isObject(options)) this.opts = defaults(cloneDeep(options), Defaults)
 
     // Verify register count is at least 1
     if (this.opts.mBits! < 0) throw Error(`[HyperLogLog] ERROR: Precision (mBits) must be at least 0.`)
