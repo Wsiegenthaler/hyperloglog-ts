@@ -51,6 +51,11 @@ const Defaults: Options = {
 }
 
 /**
+ * Re-export `Hasher` interface to allow thirdparty backends.
+ */
+export { Hasher } from './backends/hasher'
+
+/**
  * A basic implementation of the 'HyperLogLog' datastructure which is useful for
  * estimating the number of distinct elements in a multiset.
  */
