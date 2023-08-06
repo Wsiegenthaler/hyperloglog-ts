@@ -1,6 +1,6 @@
 {
   "name": "hyperlolo",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Efficiently estimate the cardinality of a set in Typescript and Javascript",
   "type": "module",
   "exports": {
